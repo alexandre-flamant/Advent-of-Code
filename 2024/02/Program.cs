@@ -10,31 +10,42 @@
                 .Select(int.Parse)
                 .ToList()
                 )
-            .Where(row => row.Count > 1)
+            .Where(row => row.Count > 0)
             .ToList();
 
+        foreach (int damp in new int[] { 0, 1 })
+        {
+            bool[] isSafe = data.Select(x => IsSafe(x, damp)).ToArray();
+            int safeCount = isSafe.Aggregate(0, (acc, safe) => acc + (safe ? 1 : 0));
 
-        bool[] isSafe = data.Select(x => IsSafe(x, 0)).ToArray();
-        int safeCount = isSafe.Aggregate(0, (acc, safe) => acc + (safe ? 1 : 0));
-
-        Console.WriteLine("Number of safe records: {0}", safeCount);
-
-        isSafe = data.Select(x => IsSafe(x, 1)).ToArray();
-        safeCount = isSafe.Aggregate(0, (acc, safe) => acc + (safe ? 1 : 0));
-        Console.WriteLine("Number of safe records with dampening of 1: {0}", safeCount);
+            Console.WriteLine("Number of safe records with damp {0}: {1}", damp, safeCount);
+        }
     }
-
 
     public static bool IsSafe(List<int> data, int damp)
     {
+        if (data.Count < 2) return false;
+
+        // Arithmetic check for the slope continuity
         int slope = data[0] < data[1] ? 1 : -1;
         for (int i = 0; i < data.Count - 1; i++)
         {
             int delta = data[i + 1] - data[i];
-            if (delta * slope < 1 || delta * slope > 3)
+            if ((delta * slope < 1) || (delta * slope) > 3)
             {
-                damp--;
-                if (damp < 0) return false;
+                if (damp == 0) return false;
+
+                foreach (int j in i == 1 ? new int[] { -1, 0, 1 } : new int[] { 0, 1 })
+                {
+                    List<int> dataCopy = new List<int>(data);
+                    int idx = i + j;
+                    if (idx < 0) continue;
+
+                    dataCopy.RemoveAt(idx);
+                    bool isSafe = IsSafe(dataCopy, damp - 1);
+                    if (isSafe) return true;
+                }
+                return false;
             }
         }
         return true;

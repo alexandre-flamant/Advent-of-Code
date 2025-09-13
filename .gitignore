@@ -1,0 +1,6 @@
+# Ignore all bin and obj directories recursively
+**/bin/
+**/obj/
+
+# Ignore all .csproj files
+*.csproj
