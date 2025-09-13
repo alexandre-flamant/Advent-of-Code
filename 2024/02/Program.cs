@@ -33,16 +33,17 @@
             int delta = data[i + 1] - data[i];
             if ((delta * slope < 1) || (delta * slope) > 3)
             {
+                // Avoid unnecessary copy
                 if (damp == 0) return false;
 
+                // Edge case for the very first item of the list
                 foreach (int j in i == 1 ? new int[] { -1, 0, 1 } : new int[] { 0, 1 })
                 {
                     List<int> dataCopy = new List<int>(data);
-                    int idx = i + j;
-                    if (idx < 0) continue;
 
-                    dataCopy.RemoveAt(idx);
+                    dataCopy.RemoveAt(i + j);
                     bool isSafe = IsSafe(dataCopy, damp - 1);
+
                     if (isSafe) return true;
                 }
                 return false;
